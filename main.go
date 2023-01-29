@@ -13,8 +13,8 @@ import (
 )
 
 type Flags struct {
-	threads int    // concurrency
-	runtime int    // seconds
+	threads *int   // concurrency
+	runtime *int   // seconds
 	dsn     string // MySQL DSN
 	runtype string // run type
 }
@@ -24,8 +24,8 @@ var MU sync.Mutex
 var flags Flags
 
 func init() {
-	flags.threads = *flag.Int("thread", 10, "number of concurrent threads")
-	flags.runtime = *flag.Int("runtime", 600, "test time")
+	flags.threads = flag.Int("thread", 10, "number of concurrent threads")
+	flags.runtime = flag.Int("runtime", 600, "test time")
 	flag.StringVar(&flags.dsn, "dsn", "test:test@tcp(127.0.0.1:4000)/test", "mysql dsn")
 	flag.StringVar(&flags.runtype, "runtype", "init", "run type")
 }
@@ -71,7 +71,7 @@ func handleQuery(wg *sync.WaitGroup) {
 	_, err = db.Exec("set autocommit =1")
 	mustNil(err)
 	defer db.Close()
-	tc := time.NewTicker(time.Duration(time.Duration(flags.runtime) * time.Second))
+	tc := time.NewTicker(time.Duration(time.Duration(*flags.runtime) * time.Second))
 	for {
 		select {
 		case <-tc.C:
@@ -105,7 +105,7 @@ func handlePrepare(wg *sync.WaitGroup) {
 		mustNil(err)
 		return
 	}
-	tc := time.NewTicker(time.Duration(time.Duration(flags.runtime) * time.Second))
+	tc := time.NewTicker(time.Duration(time.Duration(*flags.runtime) * time.Second))
 	for {
 		select {
 		case <-tc.C:
@@ -123,6 +123,7 @@ func handlePrepare(wg *sync.WaitGroup) {
 
 func main() {
 	flag.Parse()
+	fmt.Println()
 	var rt int
 	switch strings.ToLower(flags.runtype) {
 	case "init":
@@ -141,7 +142,7 @@ func main() {
 	}
 
 	var wg sync.WaitGroup
-	for i := 0; i < flags.threads; i++ {
+	for i := 0; i < *flags.threads; i++ {
 		wg.Add(1)
 		if rt == 1 {
 			go handleQuery(&wg)
@@ -150,5 +151,5 @@ func main() {
 		}
 	}
 	wg.Wait()
-	fmt.Println("QPS :", QUERY_COUNT/int64(flags.runtime))
+	fmt.Println("QPS :", QUERY_COUNT/int64(*flags.runtime))
 }
