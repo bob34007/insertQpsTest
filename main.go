@@ -31,8 +31,8 @@ func init() {
 }
 
 func createTable() error {
-	createDBSQL := "create database if not exist autoinc"
-	createTableSQL := "create table if not exist autoinc.autoinctest (id int primary key auto_increment,name varchar(10)) AUTO_ID_CACHE 1"
+	createDBSQL := "create database if not exists autoinc"
+	createTableSQL := "create table if not exists autoinc.autoinctest (id int primary key auto_increment,name varchar(10)) AUTO_ID_CACHE 1"
 
 	db, err := sql.Open("mysql", flags.dsn)
 	if err != nil {
