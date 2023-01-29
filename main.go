@@ -71,7 +71,7 @@ func handleQuery(wg *sync.WaitGroup) {
 	_, err = db.Exec("set autocommit =1")
 	mustNil(err)
 	defer db.Close()
-	tc := time.NewTicker(time.Duration(flags.runtime * 1000 * 1000 * 1000))
+	tc := time.NewTicker(time.Duration(time.Duration(flags.runtime) * time.Second))
 	for {
 		select {
 		case <-tc.C:
@@ -105,7 +105,7 @@ func handlePrepare(wg *sync.WaitGroup) {
 		mustNil(err)
 		return
 	}
-	tc := time.NewTicker(time.Duration(flags.runtime * 1000 * 1000 * 1000))
+	tc := time.NewTicker(time.Duration(time.Duration(flags.runtime) * time.Second))
 	for {
 		select {
 		case <-tc.C:
