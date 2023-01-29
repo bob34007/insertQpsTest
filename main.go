@@ -98,6 +98,8 @@ func handlePrepare(wg *sync.WaitGroup) {
 		mustNil(err)
 		return
 	}
+	_, err = db.Exec("set autocommit =1")
+	mustNil(err)
 	defer db.Close()
 	stmt, err := db.Prepare(preparesql)
 	if err != nil {
