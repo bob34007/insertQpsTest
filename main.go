@@ -123,7 +123,7 @@ func handlePrepare(wg *sync.WaitGroup) {
 
 func main() {
 	flag.Parse()
-	fmt.Println()
+	fmt.Println(*flags.runtime, *flags.threads, flags)
 	var rt int
 	switch strings.ToLower(flags.runtype) {
 	case "init":
