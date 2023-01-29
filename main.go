@@ -59,14 +59,15 @@ func mustNil(err error) {
 	}
 }
 
-func handleQuery(wg *sync.WaitGroup) error {
+func handleQuery(wg *sync.WaitGroup) {
 	var num int64
 	defer wg.Done()
 	querysql := "insert into autoinc.autoinctest (name) values ('test')"
 	db, err := sql.Open("mysql", flags.dsn)
 	if err != nil {
 		fmt.Println("conn to db server fail ,", err)
-		return err
+		mustNil(err)
+		return
 	}
 	defer db.Close()
 	tc := time.NewTicker(time.Duration(flags.runtime * 1000 * 1000 * 1000))
@@ -76,19 +77,20 @@ func handleQuery(wg *sync.WaitGroup) error {
 			MU.Lock()
 			QUERY_COUNT += num
 			MU.Unlock()
-			return nil
+			return
 		default:
 			_, err := db.Exec(querysql)
 			if err != nil {
 				fmt.Println("exec insert fail,", err)
-				return err
+				mustNil(err)
+				return
 			}
 			num++
 		}
 	}
 }
 
-func handlePrepare(wg *sync.WaitGroup) error {
+func handlePrepare(wg *sync.WaitGroup) {
 	var num int64
 	defer wg.Done()
 	preparesql := "insert into autoinc.autoinctest (name) values (?)"
@@ -96,13 +98,15 @@ func handlePrepare(wg *sync.WaitGroup) error {
 	db, err := sql.Open("mysql", flags.dsn)
 	if err != nil {
 		fmt.Println("conn to db server fail ,", err)
-		return err
+		mustNil(err)
+		return
 	}
 	defer db.Close()
 	stmt, err := db.Prepare(preparesql)
 	if err != nil {
 		fmt.Println("prepare sql fail,", err)
-		return err
+		mustNil(err)
+		return
 	}
 	tc := time.NewTicker(time.Duration(flags.runtime * 1000 * 1000 * 1000))
 	for {
@@ -111,12 +115,13 @@ func handlePrepare(wg *sync.WaitGroup) error {
 			MU.Lock()
 			QUERY_COUNT += num
 			MU.Unlock()
-			return nil
+			return
 		default:
 			_, err := stmt.Exec(val)
 			if err != nil {
 				fmt.Println("exec insert fail,", err)
-				return err
+				mustNil(err)
+				return
 			}
 			num++
 		}
@@ -146,11 +151,9 @@ func main() {
 	for i := 0; i < flags.threads; i++ {
 		wg.Add(1)
 		if rt == 1 {
-			err := handleQuery(&wg)
-			mustNil(err)
+			go handleQuery(&wg)
 		} else {
-			err := handlePrepare(&wg)
-			mustNil(err)
+			go handlePrepare(&wg)
 		}
 	}
 	wg.Wait()
