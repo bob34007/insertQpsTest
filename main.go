@@ -8,6 +8,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 type Flags struct {
