@@ -67,8 +67,9 @@ func handleQuery(wg *sync.WaitGroup) {
 	if err != nil {
 		fmt.Println("conn to db server fail ,", err)
 		mustNil(err)
-		return
 	}
+	_, err = db.Exec("set autocommit =1")
+	mustNil(err)
 	defer db.Close()
 	tc := time.NewTicker(time.Duration(flags.runtime * 1000 * 1000 * 1000))
 	for {
@@ -80,11 +81,7 @@ func handleQuery(wg *sync.WaitGroup) {
 			return
 		default:
 			_, err := db.Exec(querysql)
-			if err != nil {
-				fmt.Println("exec insert fail,", err)
-				mustNil(err)
-				return
-			}
+			mustNil(err)
 			num++
 		}
 	}
@@ -118,11 +115,7 @@ func handlePrepare(wg *sync.WaitGroup) {
 			return
 		default:
 			_, err := stmt.Exec(val)
-			if err != nil {
-				fmt.Println("exec insert fail,", err)
-				mustNil(err)
-				return
-			}
+			mustNil(err)
 			num++
 		}
 	}
